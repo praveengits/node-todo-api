@@ -28,6 +28,16 @@ app.post('/todos', (req, res) => {
     });
 });
 
+app.get('/todos', (req, res) => {    
+    //console.log(req.body);    
+    Todo.find().then((todos) => {
+        res.status(200).send({todos});
+    },(err) => {
+        res.status(400)
+        .send(err);
+    });
+});
+
 app.listen(3000, () => {
     console.log('App listening on port 3000!');
 });
