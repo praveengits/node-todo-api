@@ -10,19 +10,19 @@ var app = express();
 app.use(bodyParser.json());
 
 app.post('/todos', (req, res) => {    
-    console.log(req.body);    
+    //console.log(req.body);    
     var todo = new Todo({
         text: req.body.text,
         completed: req.body.completed,
         completedAt: req.body.completedAt
     });
     todo.save().then((doc) => {
-        console.log(`saved Data: \n 
-                    ${JSON.stringify(doc, undefined, 2)}`);
+        //console.log(`saved Data: \n 
+                    //${JSON.stringify(doc, undefined, 2)}`);
         res.status(200)
             .send(doc);
     }, (err) => {
-        console.log(`Unable to save todo ! ${err}`);
+        //console.log(`Unable to save todo ! ${err}`);
         res.status(400)
             .send(err);
     });
@@ -31,3 +31,7 @@ app.post('/todos', (req, res) => {
 app.listen(3000, () => {
     console.log('App listening on port 3000!');
 });
+
+module.exports = {
+    app
+}
