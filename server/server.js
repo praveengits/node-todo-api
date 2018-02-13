@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const {ObjectId} = require('mongodb');
 
 var {mongoose} = require('./db/mongoose'); // mention path if not installed npm
 var {Todo} = require('./models/todo');
@@ -33,6 +34,22 @@ app.get('/todos', (req, res) => {
     Todo.find().then((todos) => {
         res.status(200).send({todos});
     },(err) => {
+        res.status(400)
+        .send(err);
+    });
+});
+
+app.get('/todos/:id', (req, res) => {    
+    //console.log(req.body);   
+    if(!req.params.id || !ObjectId.isValid(req.params.id)){
+        res.status(404).send({});
+    }
+    Todo.findById(req.params.id).then((todo) => {
+        if(!todo){
+            res.status(404).send({});
+        }
+        res.status(200).send({todo});
+    }).catch((err) => {
         res.status(400)
         .send(err);
     });
