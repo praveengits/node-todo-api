@@ -141,6 +141,16 @@ app.post('/users/login', (req, res) => {
     });
 });
 
+app.delete('/users/me/',authenticate, (req, res) => {       
+    req.user.removeToken(req.headers['x-auth'])
+        .then(() => {
+            res.header('x-auth',null).status(200).send();
+        },(err) => {
+            res.status(400).send();
+        })
+});
+
+
 app.get('/users/me', authenticate, (req, res) => {
     res.send(req.user);
 
