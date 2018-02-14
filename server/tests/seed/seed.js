@@ -5,6 +5,7 @@ const {Todo} = require('./../../models/todo');
 const {User} = require('./../../models/user');
 
 const userOneId = new ObjectId();
+const userTwoId = new ObjectId();
 
 const users = [{
     _id: userOneId,
@@ -15,22 +16,27 @@ const users = [{
         token: jwt.sign({_id: userOneId.toHexString(), access: 'auth'}, 'abc123').toString()
     }]
 }, {
-    _id: new ObjectId(),
+    _id: userTwoId,
     email: 'testuser2@test.com',
     password: 'qwer1234',
-    tokens: []
+    tokens: [{
+        access: 'auth',
+        token: jwt.sign({_id: userTwoId.toHexString(), access: 'auth'}, 'abc123').toString()
+    }]
 }]
 
 const todos = [{
     _id: new ObjectId(),
     text: 'Light the candles',
     completed: true,
-    completedAt: 333
+    completedAt: 333,
+    _creator: userOneId
 }, {
     _id: new ObjectId(),
     text: 'Mow the lawn',
     completed: false,
-    completedAt: null
+    completedAt: null,
+    _creator: userTwoId
 }];
 
 const populateTodos = (done) => {
