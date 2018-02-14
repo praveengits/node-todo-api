@@ -109,9 +109,9 @@ describe('GET /todos/:id', () => {
 describe('DELETE /todos/:id', () => {
     it('should delete todo doc for the :id passed', (done)=> {
         var hexId = todos[0]._id.toHexString();
-        request(app)
-            .delete(`/todos/${hexId}`)
-            .set('x-auth',users[0].tokens[0].token)
+        request(app)            
+            .delete(`/todos/${hexId}`)       
+            .set('x-auth',users[0].tokens[0].token)     
             .expect(200)
             .expect((res) => {
                 expect(res.body.todo._id).toBe(hexId);
@@ -120,7 +120,7 @@ describe('DELETE /todos/:id', () => {
                     return done(err);
                 }
                 Todo.findById(hexId).then((todo) => {
-                    expect(todo).toNotExist();                   
+                    expect(todo).toBeFalsy();                   
                     done();
                 }).catch((error) => {
                     done(error);
@@ -138,7 +138,7 @@ describe('DELETE /todos/:id', () => {
                     return done(err);
                 }
                 Todo.findById(hexId).then((todo) => {
-                    expect(todo).toExist();                   
+                    expect(todo).toBeTruthy();                   
                     done();
                 }).catch((error) => {
                     done(error);
@@ -180,7 +180,7 @@ describe('PATCH /todos/:id', () => {
                 expect(res.body.todo.completed)
                     .toBe(true);
                 expect(res.body.todo.completedAt)
-                    .toNotBe(null);
+                    .not.toBe(null);
             }).end(done);
     });
     it('should not update todo doc - Not own todo', (done)=> {
@@ -248,8 +248,8 @@ describe('POST /users', () => {
             .send({email, password})
             .expect(200)
             .expect((res) => {
-                expect(res.headers['x-auth']).toExist();
-                expect(res.body._id).toExist();
+                expect(res.headers['x-auth']).toBeTruthy();
+                expect(res.body._id).toBeTruthy();
                 expect(res.body.email).toBe(email);               
             })
             .end((err, response) => {
@@ -257,8 +257,8 @@ describe('POST /users', () => {
                     return done(err);
                 }
                 User.findOne({email}).then((user) => {
-                    expect(user).toExist(); 
-                    expect(user.password).toNotBe(password);                  
+                    expect(user).toBeTruthy(); 
+                    expect(user.password).not.toBe(password);                  
                     done();
                 }).catch((error) => {
                     done(error);
@@ -297,8 +297,8 @@ describe('POST /users/login', () => {
             .send({email, password})
             .expect(200)
             .expect((res) => {
-                expect(res.headers['x-auth']).toExist();
-                expect(res.body._id).toExist();
+                expect(res.headers['x-auth']).toBeTruthy();
+                expect(res.body._id).toBeTruthy();
                 expect(res.body.email).toBe(email);               
             })
             .end((err, res) => {
@@ -306,7 +306,7 @@ describe('POST /users/login', () => {
                     return done(err);
                 }
                 User.findById(users[1]._id).then((user) => {                    
-                    expect(user.tokens[1]).toInclude({
+                    expect(user.toObject().tokens[1]).toMatchObject({
                         access: 'auth',
                         token: res.headers['x-auth']
                     });                  
@@ -325,7 +325,7 @@ describe('POST /users/login', () => {
             .send({email, password})
             .expect(400)
             .expect((res) => {
-                expect(res.headers['x-auth']).toNotExist();                        
+                expect(res.headers['x-auth']).toBeFalsy();                        
             })
             .end((err, res) => {
                 if(err) {
