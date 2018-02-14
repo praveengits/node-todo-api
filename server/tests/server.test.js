@@ -4,6 +4,7 @@ const {ObjectId} = require('mongodb');
 
 const {app} = require('./../server.js');
 const {Todo} = require('./../models/todo');
+const {User} = require('./../models/user');
 const {todos, users, populateUsers, populateTodos} = require('./seed/seed');
 
 beforeEach(populateUsers);
@@ -185,6 +186,54 @@ describe('GET /users/me', () => {
             .expect((res) => {
                 expect(res.body).toEqual({});                
             })
+            .end(done);
+    });
+});
+
+describe('POST /users', () => {
+    it('should create user and authenticate', (done)=>{
+        var email = 'servertest@test.com';
+        var password = 'asdf1234';
+        request(app)
+            .post('/users')
+            .send({email, password})
+            .expect(200)
+            .expect((res) => {
+                expect(res.headers['x-auth']).toExist();
+                expect(res.body._id).toExist();
+                expect(res.body.email).toBe(email);               
+            })
+            .end((err, response) => {
+                if(err) {
+                    return done(err);
+                }
+                User.findOne({email}).then((user) => {
+                    expect(user).toExist(); 
+                    expect(user.password).toNotBe(password);                  
+                    done();
+                }).catch((error) => {
+                    done(error);
+                });
+            });
+    });
+
+    it('should return validation errors if request is invalid', (done)=>{
+        var email = 'testuser6@test.com';
+        var password = 'asdf';
+        request(app)
+            .post('/users')
+            .send({email, password})
+            .expect(400)
+            .end(done);
+    });
+
+    it('should not create user if email already exists', (done)=>{
+        var email = users[0].email;
+        var password = 'asdf1234';
+        request(app)
+            .post('/users')
+            .send({email, password})
+            .expect(400)
             .end(done);
     });
 });
