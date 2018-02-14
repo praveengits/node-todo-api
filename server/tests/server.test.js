@@ -4,25 +4,11 @@ const {ObjectId} = require('mongodb');
 
 const {app} = require('./../server.js');
 const {Todo} = require('./../models/todo');
+const {todos, users, populateUsers, populateTodos} = require('./seed/seed');
 
-const todos = [{
-    _id: new ObjectId(),
-    text: 'Light the candles',
-    completed: true,
-    completedAt: 333
-}, {
-    _id: new ObjectId(),
-    text: 'Mow the lawn',
-    completed: false,
-    completedAt: null
-}];
+beforeEach(populateUsers);
+beforeEach(populateTodos);
 
-beforeEach((done) => {
-    Todo.remove({}).then(() => {
-        return Todo.insertMany(todos);
-    }).then(() => done());
-    
-});
 
 describe('POST /todos', () => {
     it('should create a new todo', (done)=> {
@@ -35,17 +21,16 @@ describe('POST /todos', () => {
             .expect((res) => {
                 expect(res.body.text).toBe(text);
             })
-            .end((err, response) => {
-                if(err) {
-                    return done(err);
+            .end((err, res) => {
+                if (err) {
+                    done(err);
                 }
+
                 Todo.find({text}).then((todos) => {
-                    expect(todos.length).toBe(1);
-                    expect(todos[0].text).toBe(text);
-                    done();
-                }).catch((error) => {
-                    done(error);
-                });
+                expect(todos.length).toBe(1);
+                expect(todos[0].text).toBe(text);
+                done();
+                }).catch((e) => done(e));
             });
     });
 
@@ -177,5 +162,29 @@ describe('PATCH /todos/:id', () => {
                 expect(res.body.todo.completedAt)
                     .toBe(null);
             }).end(done);
+    });
+});
+
+describe('GET /users/me', () => {
+    it('should return user if authenticated', (done)=>{
+        request(app)
+            .get('/users/me')
+            .set('x-auth',users[0].tokens[0].token)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body._id).toBe(users[0]._id.toHexString());
+                expect(res.body.email).toBe(users[0].email);
+            })
+            .end(done);
+    });
+
+    it('should return 401 for unauthenticated user', (done)=>{
+        request(app)
+            .get('/users/me')
+            .expect(401)
+            .expect((res) => {
+                expect(res.body).toEqual({});                
+            })
+            .end(done);
     });
 });
